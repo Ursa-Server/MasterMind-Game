@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mastermind</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for a dark theme and game elements */
+        body {
+            font-family: 'Inter', sans-serif;
+            overscroll-behavior: none; /* Prevents pull-to-refresh */
+        }
+
+        /* Style for the small feedback pegs */
+        .feedback-peg-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Default 2x2 grid for 4 pegs */
+            grid-template-rows: repeat(2, 1fr);
+            gap: 4px;
+            width: 28px; /* Default for 4 pegs */
+            height: 28px; /* Default for 4 pegs */
+        }
+        
+        .feedback-peg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #4B5563; /* Dark gray for empty */
+            border: 1px solid #6B7280;
+        }
+
+        /* Style for the guess pegs */
+        .guess-peg {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background-color: #374151; /* Darker gray for empty slot */
+            border: 2px dashed #4B5563;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        /* Style for the color palette buttons */
+        .color-btn {
+            width: 36px; /* Slightly smaller for 8 colors in one row */
+            height: 36px; /* Slightly smaller for 8 colors in one row */
+            border-radius: 50%;
+            border: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .color-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-btn.selected {
+            border-color: #3B82F6; /* Blue border for selected */
+            transform: scale(1.1);
+        }
+
+        /* Active row highlight */
+        .active-row {
+            background-color: #374151; /* A slightly lighter shade to indicate active */
+            border-color: #5E81AC; /* A subtle blue to highlight */
+        }
+
+        /* Custom scrollbar for modals */
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #374151;
+            border-radius: 10px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #4B5563;
+            border-radius: 10px;
+        }
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #6B7280;
+        }
+
+        /* Toast notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #111827;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            padding: 16px;
+            position: fixed;
+            z-index: 100;
+            left: 50%;
+            transform: translateX(-50%);
+            bottom: 30px;
+            opacity: 0;
+            transition: visibility 0s 0.5s, opacity 0.5s linear, bottom 0.5s ease;
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+            transition: visibility 0s 0s, opacity 0.5s linear, bottom 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white p-4 flex flex-col items-center justify-start min-h-screen overscroll-none">
+
+    <div class="w-full max-w-sm mx-auto">
+        <!-- Header with Icons -->
+        <div class="flex justify-between items-center mb-4">
+            <button id="instructions-btn" class="text-gray-400 hover:text-white p-2 rounded-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            </button>
+            <h1 class="text-3xl font-bold text-center text-gray-100">Mastermind</h1>
+            <div class="flex space-x-2">
+                <button id="analytics-btn" class="text-gray-400 hover:text-white p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                </button>
+                <button id="settings-btn" class="text-gray-400 hover:text-white p-2 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Streak Counter -->
+        <div class="flex justify-center items-center space-x-2 mb-2 text-lg">
+            <span class="text-gray-400">Streak:</span>
+            <span id="current-streak" class="font-bold text-white">0</span>
+            <span class="text-yellow-400">🔥</span>
+        </div>
+
+        <!-- Secret Code (Hidden until game over) -->
+        <div id="secret-code" class="flex justify-center space-x-2 mb-4 p-2 bg-gray-700 rounded-lg" style="display: none;">
+            <!-- Secret pegs will be added here by JS -->
+        </div>
+
+        <!-- Game Board -->
+        <div id="game-board" class="space-y-2 mb-4 border border-gray-700 rounded-lg p-2 bg-gray-800">
+            <!-- Guess rows will be generated by JS -->
+        </div>
+
+        <!-- Color Palette -->
+        <div id="color-palette" class="flex flex-row flex-wrap justify-center gap-2 mb-4 p-3 bg-gray-800 rounded-lg">
+            <!-- Color buttons will be generated by JS -->
+        </div>
+
+        <!-- Controls -->
+        <div class="grid grid-cols-3 gap-2">
+            <button id="hint-btn" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold p-3 rounded-lg transition duration-200 flex justify-center items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 16.84c.425-.425.753-1.002 1.002-1.602m3.672-3.672c.6-.249 1.177-.577 1.602-1.002m-5.274 5.274l5.274-5.274M12 21a9 9 0 110-18 9 9 0 010 18z" /></svg>
+            </button>
+            <button id="submit-guess" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 col-span-1">
+                Submit Guess
+            </button>
+            <button id="new-game-btn" class="w-full bg-gray-600 hover:bg-gray-700 text-white font-bold p-3 rounded-lg transition duration-200 flex justify-center items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M1 4v6h6m16 10v-6h-6M20.49 9A9 9 0 007.8 6.93M3.51 15a9 9 0 0012.7 2.07" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Generic Modal Wrapper -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50" style="display: none;">
+        <!-- End Game Modal -->
+        <div id="end-game-modal" class="bg-gray-800 p-6 rounded-lg shadow-xl text-center max-w-xs w-full" style="display: none;">
+            <h2 id="modal-title" class="text-2xl font-bold mb-4">You Won!</h2>
+            <p id="modal-message" class="mb-4">Congratulations, you cracked the code!</p>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="modal-share" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                    Share
+                </button>
+                <button id="modal-new-game" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                    Play Again
+                </button>
+            </div>
+        </div>
+
+        <!-- Instructions Modal -->
+        <div id="instructions-modal" class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full" style="display: none;">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">How to Play</h2>
+                <button class="modal-close text-gray-400 hover:text-white">&times;</button>
+            </div>
+            <div class="space-y-4 text-gray-300 max-h-80 overflow-y-auto modal-content pr-2">
+                <p>Guess the secret code in 10 tries or less.</p>
+                <p>The code is a sequence of colors. Duplicates are allowed.</p>
+                <p>After each guess, you'll get feedback:</p>
+                <ul class="list-none space-y-2 pl-4">
+                    <li class="flex items-center space-x-2">
+                        <span class="w-4 h-4 rounded-full bg-white block"></span>
+                        <span>= Correct color in the correct position.</span>
+                    </li>
+                    <li class="flex items-center space-x-2">
+                        <span class="w-4 h-4 rounded-full bg-red-600 block"></span>
+                        <span>= Correct color in the wrong position.</span>
+                    </li>
+                    <li class="flex items-center space-x-2">
+                        <span class="w-4 h-4 rounded-full bg-gray-600 block"></span>
+                        <span>= Incorrect color.</span>
+                    </li>
+                </ul>
+                <p>Tap a color in the palette to add it to your guess. Tap a peg in the active row to remove it.</p>
+                <p><strong>Hint:</strong> Use the <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 16.84c.425-.425.753-1.002 1.002-1.602m3.672-3.672c.6-.249 1.177-.577 1.602-1.002m-5.274 5.274l5.274-5.274M12 21a9 9 0 110-18 9 9 0 010 18z" /></svg> button once per game to reveal one correct peg. This will cost you a guess!</p>
+                <p><strong>Hard Mode:</strong> If enabled, all your guesses must be consistent with the feedback from all previous turns.</p>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full" style="display: none;">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Settings</h2>
+                <button class="modal-close text-gray-400 hover:text-white">&times;</button>
+            </div>
+            <div class="space-y-6 text-gray-300">
+                <div class="flex justify-between items-center">
+                    <label for="code-length" class="font-medium">Code Length</label>
+                    <select id="code-length" class="bg-gray-700 text-white rounded-lg p-2">
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                </div>
+                <div class="flex justify-between items-center">
+                    <label for="color-count" class="font-medium">Number of Colors</label>
+                    <select id="color-count" class="bg-gray-700 text-white rounded-lg p-2">
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                    </select>
+                </div>
+                <div class="flex justify-between items-center">
+                    <label for="hard-mode" class="font-medium">Hard Mode</label>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="hard-mode" class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                    </label>
+                </div>
+                <p class="text-sm text-gray-400">Note: Settings will apply to the next new game.</p>
+            </div>
+        </div>
+
+        <!-- Analytics Modal -->
+        <div id="analytics-modal" class="bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full" style="display: none;">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Statistics</h2>
+                <button class="modal-close text-gray-400 hover:text-white">&times;</button>
+            </div>
+            <div class="flex justify-around text-center mb-6">
+                <div>
+                    <div id="stats-played" class="text-3xl font-bold">0</div>
+                    <div class="text-sm text-gray-400">Played</div>
+                </div>
+                <div>
+                    <div id="stats-win-pct" class="text-3xl font-bold">0</div>
+                    <div class="text-sm text-gray-400">Win %</div>
+                </div>
+                <div>
+                    <div id="stats-streak" class="text-3xl font-bold">0</div>
+                    <div class="text-sm text-gray-400">Streak</div>
+                </div>
+                <div>
+                    <div id="stats-max-streak" class="text-3xl font-bold">0</div>
+                    <div class="text-sm text-gray-400">Max</div>
+                </div>
+            </div>
+            <h3 class="text-lg font-bold text-center mb-4">Guess Distribution</h3>
+            <div id="stats-distribution" class="space-y-2">
+                <!-- Distribution bars will be generated here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast">Copied results to clipboard!</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Game Configuration ---
+            const ALL_COLORS = ['#EF4444', '#22C55E', '#3B82F6', '#EAB308', '#A855F7', '#EC4899', '#F97316', '#14B8A6']; // Red, Green, Blue, Yellow, Purple, Pink, Orange, Teal
+            let CODE_LENGTH = 4;
+            let MAX_GUESSES = 10;
+            let NUM_COLORS = 6;
+            let IS_HARD_MODE = false;
+
+            // --- DOM Elements ---
+            const gameBoard = document.getElementById('game-board');
+            const colorPalette = document.getElementById('color-palette');
+            const submitButton = document.getElementById('submit-guess');
+            const hintButton = document.getElementById('hint-btn');
+            const newGameButton = document.getElementById('new-game-btn'); // New game button in main controls
+            const secretCodeContainer = document.getElementById('secret-code');
+            const currentStreakDisplay = document.getElementById('current-streak');
+            const toast = document.getElementById('toast');
+            
+            // Modal Elements
+            const modalOverlay = document.getElementById('modal-overlay');
+            const endGameModal = document.getElementById('end-game-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalNewGameButton = document.getElementById('modal-new-game');
+            const modalShareButton = document.getElementById('modal-share');
+
+            // Header Buttons
+            const instructionsButton = document.getElementById('instructions-btn');
+            const analyticsButton = document.getElementById('analytics-btn');
+            const settingsButton = document.getElementById('settings-btn');
+
+            // Modals
+            const instructionsModal = document.getElementById('instructions-modal');
+            const analyticsModal = document.getElementById('analytics-modal');
+            const settingsModal = document.getElementById('settings-modal');
+
+            // Settings Inputs
+            const codeLengthSelect = document.getElementById('code-length');
+            const colorCountSelect = document.getElementById('color-count');
+            const hardModeToggle = document.getElementById('hard-mode');
+
+            // Analytics Display
+            const statsPlayed = document.getElementById('stats-played');
+            const statsWinPct = document.getElementById('stats-win-pct');
+            const statsStreak = document.getElementById('stats-streak');
+            const statsMaxStreak = document.getElementById('stats-max-streak');
+            const statsDistribution = document.getElementById('stats-distribution');
+
+            // --- Game State ---
+            let secretCode = [];
+            let currentGuess = [];
+            let currentRow = 0;
+            let gameOver = false;
+            let currentColors = [];
+            let guessHistory = []; // For hard mode and sharing
+            let hintUsed = false;
+            let stats = {};
+
+            // --- Functions ---
+            
+            /**
+             * Vibrate wrapper for haptics
+             */
+            function vibrate(duration) {
+                if (navigator.vibrate) {
+                    try {
+                        navigator.vibrate(duration);
+                    } catch (e) {
+                        console.log("Haptics failed", e);
+                    }
+                }
+            }
+            
+            /**
+             * Show a toast notification
+             */
+            function showToast(message) {
+                toast.textContent = message;
+                toast.classList.add('show');
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            /**
+             * Load settings from localStorage or set defaults
+             */
+            function loadSettings() {
+                CODE_LENGTH = parseInt(localStorage.getItem('mastermindCodeLength') || '4', 10);
+                NUM_COLORS = parseInt(localStorage.getItem('mastermindColorCount') || '6', 10);
+                IS_HARD_MODE = (localStorage.getItem('mastermindHardMode') === 'true');
+
+                // Update settings modal inputs to reflect loaded settings
+                codeLengthSelect.value = CODE_LENGTH;
+                colorCountSelect.value = NUM_COLORS;
+                hardModeToggle.checked = IS_HARD_MODE;
+            }
+
+            /**
+             * Save settings to localStorage
+             */
+            function saveSettings() {
+                localStorage.setItem('mastermindCodeLength', codeLengthSelect.value);
+                localStorage.setItem('mastermindColorCount', colorCountSelect.value);
+                localStorage.setItem('mastermindHardMode', hardModeToggle.checked);
+                
+                // Show a message that settings will apply on next game
+                showToast("Settings saved! They will apply on your next game.");
+                closeModal();
+            }
+
+            /**
+             * Load stats from localStorage
+             */
+            function loadStats() {
+                stats = JSON.parse(localStorage.getItem('mastermindStats')) || {
+                    gamesPlayed: 0,
+                    gamesWon: 0,
+                    streak: 0,
+                    maxStreak: 0,
+                    totalTurns: 0,
+                    distribution: {}
+                };
+                updateStreakDisplay();
+            }
+            
+            /**
+             * Save stats to localStorage
+             */
+            function saveStats() {
+                localStorage.setItem('mastermindStats', JSON.stringify(stats));
+            }
+
+            /**
+             * Update stats after a game ends
+             */
+            function updateStats(win) {
+                stats.gamesPlayed++;
+                if (win) {
+                    stats.gamesWon++;
+                    stats.streak++;
+                    stats.maxStreak = Math.max(stats.streak, stats.maxStreak);
+                    const turns = currentRow + 1;
+                    stats.totalTurns += turns;
+                    stats.distribution[turns] = (stats.distribution[turns] || 0) + 1;
+                } else {
+                    stats.streak = 0;
+                    stats.distribution['fail'] = (stats.distribution['fail'] || 0) + 1;
+                }
+                saveStats();
+                updateStreakDisplay();
+            }
+            
+            /**
+             * Update the streak display on the main page
+             */
+            function updateStreakDisplay() {
+                currentStreakDisplay.textContent = stats.streak || 0;
+            }
+
+            /**
+             * Initializes or resets the game
+             */
+            function initGame() {
+                // Load settings first
+                loadSettings();
+                
+                // Reset game state
+                currentColors = ALL_COLORS.slice(0, NUM_COLORS);
+                secretCode = generateSecretCode();
+                currentGuess = [];
+                currentRow = 0;
+                gameOver = false;
+                guessHistory = [];
+                hintUsed = false;
+
+                // Reset UI
+                gameBoard.innerHTML = '';
+                colorPalette.innerHTML = '';
+                secretCodeContainer.innerHTML = '';
+                secretCodeContainer.style.display = 'none';
+                modalOverlay.style.display = 'none';
+                endGameModal.style.display = 'none';
+                submitButton.disabled = false;
+                submitButton.classList.remove('opacity-50', 'cursor-not-allowed');
+                hintButton.disabled = false;
+                hintButton.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                drawBoard();
+                drawPalette();
+                updateActiveRow();
+                updateStreakDisplay();
+                
+                // For debugging: console.log('Secret Code:', secretCode.map(c => ALL_COLORS.indexOf(c)));
+            }
+
+            /**
+             * Generates a random secret code
+             * @returns {string[]} Array of color strings
+             */
+            function generateSecretCode() {
+                const code = [];
+                for (let i = 0; i < CODE_LENGTH; i++) {
+                    const randomIndex = Math.floor(Math.random() * currentColors.length);
+                    code.push(currentColors[randomIndex]);
+                }
+                return code;
+            }
+
+            /**
+             * Creates the color palette buttons in the DOM
+             */
+            function drawPalette() {
+                // Adjust palette grid based on color count
+                colorPalette.className = `flex flex-row flex-wrap justify-center gap-2 mb-4 p-3 bg-gray-800 rounded-lg`;
+                
+                currentColors.forEach(color => {
+                    const colorBtn = document.createElement('button');
+                    colorBtn.className = 'color-btn';
+                    colorBtn.style.backgroundColor = color;
+                    colorBtn.setAttribute('data-color', color);
+                    colorBtn.addEventListener('click', () => handleColorClick(color));
+                    colorPalette.appendChild(colorBtn);
+                });
+            }
+
+            /**
+             * Creates the guess rows in the DOM
+             */
+            function drawBoard() {
+                for (let i = 0; i < MAX_GUESSES; i++) {
+                    const row = document.createElement('div');
+                    row.className = 'guess-row flex items-center justify-between p-2 rounded-lg border-2 border-transparent';
+                    row.id = `row-${i}`;
+
+                    // Guess Pegs
+                    const guessPegsContainer = document.createElement('div');
+                    guessPegsContainer.className = 'flex space-x-2';
+                    for (let j = 0; j < CODE_LENGTH; j++) {
+                        const peg = document.createElement('div');
+                        peg.className = 'guess-peg w-10 h-10 md:w-12 md:h-12'; // Responsive peg size
+                        // Adjust size based on code length
+                        if (CODE_LENGTH === 5) peg.className = 'guess-peg w-8 h-8 md:w-10 md:h-10';
+                        if (CODE_LENGTH === 6) peg.className = 'guess-peg w-7 h-7 md:w-8 md:h-8';
+                        
+                        peg.id = `peg-${i}-${j}`;
+                        // Add click event to remove a color from the guess
+                        peg.addEventListener('click', () => handlePegClick(j));
+                        guessPegsContainer.appendChild(peg);
+                    }
+
+                    // Feedback Pegs
+                    const feedbackPegsContainer = document.createElement('div');
+                    feedbackPegsContainer.className = 'feedback-peg-grid';
+                    // Adjust feedback grid for code length
+                    if (CODE_LENGTH === 5) {
+                        feedbackPegsContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
+                        feedbackPegsContainer.style.width = '33px';
+                        feedbackPegsContainer.style.height = '20px';
+                    }
+                    if (CODE_LENGTH === 6) {
+                        feedbackPegsContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
+                        feedbackPegsContainer.style.width = '33px';
+                        feedbackPegsContainer.style.height = '20px';
+                    }
+
+                    for (let j = 0; j < CODE_LENGTH; j++) {
+                        const peg = document.createElement('div');
+                        peg.className = 'feedback-peg';
+                        peg.id = `feedback-${i}-${j}`;
+                        feedbackPegsContainer.appendChild(peg);
+                    }
+                    
+                    row.appendChild(guessPegsContainer);
+                    row.appendChild(feedbackPegsContainer);
+                    gameBoard.appendChild(row);
+                }
+                // Reverse rows to show from bottom-up, more classic board game feel
+                const rows = Array.from(gameBoard.children);
+                gameBoard.innerHTML = '';
+                gameBoard.append(...rows.reverse());
+            }
+
+            /**
+             * Handles clicking a color from the palette
+             * @param {string} color - The color that was clicked
+             */
+            function handleColorClick(color) {
+                if (gameOver || currentGuess.length >= CODE_LENGTH) {
+                    return;
+                }
+                
+                currentGuess.push(color);
+                updateCurrentGuessPegs();
+            }
+
+            /**
+             * Handles clicking a peg in the current guess row to remove it
+             * @param {number} index - The index of the peg clicked
+             */
+            function handlePegClick(index) {
+                if (gameOver || index >= currentGuess.length) {
+                    return; // Can't remove a color that hasn't been set
+                }
+
+                // Remove the color at the clicked index
+                currentGuess.splice(index, 1);
+                updateCurrentGuessPegs();
+            }
+
+            /**
+             * Updates the DOM to reflect the currentGuess array
+             */
+            function updateCurrentGuessPegs() {
+                for (let i = 0; i < CODE_LENGTH; i++) {
+                    const peg = document.getElementById(`peg-${currentRow}-${i}`);
+                    if (!peg) continue; // Safety check
+                    if (currentGuess[i]) {
+                        peg.style.backgroundColor = currentGuess[i];
+                        peg.style.borderStyle = 'solid';
+                        peg.style.borderColor = '#9CA3AF'; // Add a light border to filled pegs
+                    } else {
+                        peg.style.backgroundColor = '#374151'; // Empty slot color
+                        peg.style.borderStyle = 'dashed';
+                        peg.style.borderColor = '#4B5563';
+                    }
+                }
+            }
+            
+            /**
+             * Highlights the current active guess row
+             */
+            function updateActiveRow() {
+                // Remove active class from all rows
+                document.querySelectorAll('.guess-row').forEach(row => {
+                    row.classList.remove('active-row');
+                });
+                
+                // Add active class to the current row
+                if (!gameOver) {
+                    const activeRow = document.getElementById(`row-${currentRow}`);
+                    if (activeRow) {
+                        activeRow.classList.add('active-row');
+                    }
+                }
+            }
+            
+            /**
+             * Validates the guess against previous feedback in Hard Mode
+             * @param {string[]} guess - The user's current guess
+             * @returns {boolean} - True if the guess is valid, false otherwise
+             */
+            function validateHardMode(guess) {
+                if (!IS_HARD_MODE) return true;
+                
+                for (const history of guessHistory) {
+                    const simulatedFeedback = getFeedback(guess, history.guess);
+                    if (simulatedFeedback.blackPegs !== history.feedback.blackPegs || 
+                        simulatedFeedback.whitePegs !== history.feedback.whitePegs) {
+                        
+                        // This guess contradicts feedback from row ${guessHistory.indexOf(history) + 1}
+                        showToast(`Guess contradicts feedback from row ${guessHistory.indexOf(history) + 1}.`);
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            /**
+             * Handles the "Submit Guess" button click
+             */
+            function handleSubmitGuess() {
+                if (gameOver || currentGuess.length !== CODE_LENGTH) {
+                    showToast("Your guess is not complete.");
+                    return;
+                }
+                
+                // Hard Mode Check
+                if (IS_HARD_MODE) {
+                    // Check against the secret code itself. If this guess was the code,
+                    // would it produce the same feedback for all previous guesses?
+                    const isGuessValid = guessHistory.every(past => {
+                        const pastFeedback = past.feedback;
+                        const currentFeedback = getFeedback(past.guess, currentGuess); // what feedback *would* this guess give?
+                        return currentFeedback.blackPegs === pastFeedback.blackPegs &&
+                               currentFeedback.whitePegs === pastFeedback.whitePegs;
+                    });
+
+                    if (!isGuessValid) {
+                        vibrate(100);
+                        showToast("This guess doesn't match all previous clues!");
+                        return;
+                    }
+                }
+                
+                vibrate(50); // Haptic feedback on submit
+
+                // Get feedback
+                const feedback = getFeedback(currentGuess, secretCode);
+                guessHistory.push({ guess: [...currentGuess], feedback: feedback });
+
+                // Display feedback
+                displayFeedback(feedback.blackPegs, feedback.whitePegs);
+
+                // Check for win
+                if (feedback.blackPegs === CODE_LENGTH) {
+                    vibrate(500); // Win haptic
+                    gameOver = true;
+                    updateStats(true);
+                    showEndGameModal(true);
+                    revealSecretCode();
+                    return;
+                }
+
+                // Not a win, move to next row
+                currentRow++;
+                currentGuess = [];
+
+                // Check for loss
+                if (currentRow === MAX_GUESSES) {
+                    vibrate([200, 100, 200]); // Lose haptic
+                    gameOver = true;
+                    updateStats(false);
+                    showEndGameModal(false);
+                    revealSecretCode();
+                    return;
+                }
+
+                updateActiveRow();
+            }
+            
+            /**
+             * Handles the "Hint" button click
+             */
+            function handleHintClick() {
+                if (gameOver || hintUsed || currentRow >= MAX_GUESSES - 1) {
+                    let msg = "Can't use hint.";
+                    if (hintUsed) msg = "Hint already used this game.";
+                    if (gameOver) msg = "Game is over.";
+                    if (currentRow >= MAX_GUESSES - 1) msg = "Can't use hint on the last guess.";
+                    showToast(msg);
+                    return;
+                }
+
+                hintUsed = true;
+                hintButton.disabled = true;
+                hintButton.classList.add('opacity-50', 'cursor-not-allowed');
+                vibrate(100);
+
+                // Find a correct peg to reveal
+                // Try to find one that isn't already correct in the current guess
+                let hintIndex = -1;
+                if (currentGuess.length === CODE_LENGTH) {
+                    for(let i=0; i < CODE_LENGTH; i++) {
+                        if (currentGuess[i] !== secretCode[i]) {
+                            hintIndex = i;
+                            break;
+                        }
+                    }
+                }
+                
+                // If all are correct (somehow) or guess is empty, just find a random one
+                if (hintIndex === -1) {
+                    hintIndex = Math.floor(Math.random() * CODE_LENGTH);
+                }
+
+                // Create a "hint" guess
+                const hintGuess = new Array(CODE_LENGTH).fill(null);
+                hintGuess[hintIndex] = secretCode[hintIndex];
+                
+                // Display this as a guess
+                for (let i = 0; i < CODE_LENGTH; i++) {
+                    const peg = document.getElementById(`peg-${currentRow}-${i}`);
+                    if (!peg) continue;
+                    if (i === hintIndex) {
+                        peg.style.backgroundColor = secretCode[i];
+                        peg.style.border = '2px solid #EAB308'; // Yellow/Gold border for hint
+                    } else {
+                        peg.style.backgroundColor = '#4B5563'; // Dark gray
+                        peg.style.borderStyle = 'none';
+                        peg.style.opacity = '0.5';
+                    }
+                }
+                
+                // Get feedback for this "hint"
+                const feedback = getFeedback(hintGuess, secretCode);
+                guessHistory.push({ guess: hintGuess, feedback: feedback });
+                displayFeedback(feedback.blackPegs, feedback.whitePegs);
+                
+                // Move to next row
+                currentRow++;
+                currentGuess = [];
+
+                if (currentRow === MAX_GUESSES) {
+                    vibrate([200, 100, 200]);
+                    gameOver = true;
+                    updateStats(false);
+                    showEndGameModal(false);
+                    revealSecretCode();
+                    return;
+                }
+                
+                updateActiveRow();
+                showToast("Hint used! One correct peg revealed.");
+            }
+
+            /**
+             * Compares the guess to the secret code and returns feedback
+             * @param {string[]} guess - The user's guess array
+             * @param {string[]} code - The code to compare against (usually secretCode)
+             * @returns {{blackPegs: number, whitePegs: number}}
+             */
+            function getFeedback(guess, code) {
+                let blackPegs = 0;
+                let whitePegs = 0;
+                
+                const codeCopy = [...code];
+                const guessCopy = [...guess];
+
+                // First pass: Check for black pegs (correct color, correct position)
+                for (let i = guessCopy.length - 1; i >= 0; i--) {
+                    if (guessCopy[i] && guessCopy[i] === codeCopy[i]) {
+                        blackPegs++;
+                        // Nullify to prevent re-counting
+                        codeCopy[i] = null;
+                        guessCopy[i] = null;
+                    }
+                }
+
+                // Second pass: Check for white pegs (correct color, wrong position)
+                for (let i = 0; i < guessCopy.length; i++) {
+                    if (guessCopy[i] !== null) {
+                        const matchingIndexInCode = codeCopy.indexOf(guessCopy[i]);
+                        if (matchingIndexInCode !== -1) {
+                            whitePegs++;
+                            // Nullify to prevent re-counting
+                            codeCopy[matchingIndexInCode] = null;
+                        }
+                    }
+                }
+
+                return { blackPegs, whitePegs };
+            }
+
+            /**
+             * Updates the feedback pegs in the DOM for the current row
+             * @param {number} blackPegs
+             * @param {number} whitePegs
+             */
+            function displayFeedback(blackPegs, whitePegs) {
+                let feedbackIndex = 0;
+                
+                // Display black pegs
+                for (let i = 0; i < blackPegs; i++) {
+                    const peg = document.getElementById(`feedback-${currentRow}-${feedbackIndex}`);
+                    if (peg) peg.style.backgroundColor = '#FFFFFF'; // White for "black" peg (classic)
+                    feedbackIndex++;
+                }
+
+                // Display white pegs
+                for (let i = 0; i < whitePegs; i++) {
+                    const peg = document.getElementById(`feedback-${currentRow}-${feedbackIndex}`);
+                    if (peg) peg.style.backgroundColor = '#DC2626'; // Red for "white" peg
+                    feedbackIndex++;
+                }
+                
+                // The rest will remain the default dark gray
+            }
+
+            /**
+             * Reveals the secret code at the end of the game
+             */
+            function revealSecretCode() {
+                secretCodeContainer.innerHTML = ''; // Clear previous
+                secretCode.forEach(color => {
+                    const peg = document.createElement('div');
+                    let pegSize = 'w-8 h-8 md:w-10 md:h-10';
+                    if (CODE_LENGTH === 5) pegSize = 'w-7 h-7 md:w-9 md:h-9';
+                    if (CODE_LENGTH === 6) pegSize = 'w-6 h-6 md:w-8 md:h-8';
+                    peg.className = `${pegSize} rounded-full border-2 border-gray-400`;
+                    peg.style.backgroundColor = color;
+                    secretCodeContainer.appendChild(peg);
+                });
+                secretCodeContainer.style.display = 'flex';
+            }
+
+            /**
+             * Shows the win/lose modal
+             * @param {boolean} isWin - True if the player won, false if they lost
+             */
+            function showEndGameModal(isWin) {
+                if (isWin) {
+                    modalTitle.textContent = 'You Won!';
+                    modalMessage.textContent = `Congratulations, you cracked the code in ${currentRow + 1} guesses!`;
+                } else {
+                    modalTitle.textContent = 'Game Over';
+                    modalMessage.textContent = 'You ran out of guesses! The code has been revealed.';
+                }
+                
+                // Disable submit button
+                submitButton.disabled = true;
+                submitButton.classList.add('opacity-50', 'cursor-not-allowed');
+                hintButton.disabled = true;
+                hintButton.classList.add('opacity-50', 'cursor-not-allowed');
+
+                // Remove active row highlight
+                document.querySelectorAll('.guess-row').forEach(row => {
+                    row.classList.remove('active-row');
+                });
+                
+                modalOverlay.style.display = 'flex';
+                endGameModal.style.display = 'block';
+            }
+            
+            /**
+             * Generates the shareable emoji grid and copies to clipboard
+             */
+            function handleShare() {
+                vibrate(50);
+                let resultString = `Mastermind (${CODE_LENGTH} pegs, ${NUM_COLORS} colors)\n`;
+                resultString += `Turns: ${gameOver && modalTitle.textContent === 'You Won!' ? currentRow + 1 : 'X'}/${MAX_GUESSES}\n`;
+                if (IS_HARD_MODE) resultString += "(Hard Mode)\n";
+                resultString += "\n";
+
+                guessHistory.forEach(item => {
+                    let rowString = "";
+                    rowString += "⚪".repeat(item.feedback.blackPegs); // White square for "black" peg
+                    rowString += "🔴".repeat(item.feedback.whitePegs); // Red circle for "white" peg
+                    rowString += "⚫".repeat(CODE_LENGTH - item.feedback.blackPegs - item.feedback.whitePegs); // Black circle for empty
+                    resultString += rowString + "\n";
+                });
+                
+                // Use document.execCommand('copy') for better iframe compatibility
+                const textArea = document.createElement('textarea');
+                textArea.value = resultString;
+                textArea.style.position = 'fixed';  // Prevent scrolling to bottom
+                textArea.style.top = '-999px';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast("Copied results to clipboard!");
+                } catch (err) {
+                    showToast("Failed to copy results.");
+                }
+                document.body.removeChild(textArea);
+            }
+            
+            /**
+             * Shows the analytics modal
+             */
+            function showAnalyticsModal() {
+                statsPlayed.textContent = stats.gamesPlayed || 0;
+                const winPct = (stats.gamesPlayed > 0) ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
+                statsWinPct.textContent = winPct;
+                statsStreak.textContent = stats.streak || 0;
+                statsMaxStreak.textContent = stats.maxStreak || 0;
+
+                // Generate distribution bars
+                statsDistribution.innerHTML = '';
+                let maxDistribution = 0;
+                for (let i = 1; i <= MAX_GUESSES; i++) {
+                    const count = stats.distribution[i] || 0;
+                    if (count > maxDistribution) maxDistribution = count;
+                }
+                const failCount = stats.distribution['fail'] || 0;
+                if (failCount > maxDistribution) maxDistribution = failCount;
+                if (maxDistribution === 0) maxDistribution = 1; // Avoid divide by zero
+
+                for (let i = 1; i <= MAX_GUESSES; i++) {
+                    const count = stats.distribution[i] || 0;
+                    const barWidth = (count / maxDistribution) * 100;
+                    const bar = `
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 font-medium">${i}</div>
+                            <div class="w-full bg-gray-700 rounded-full h-5">
+                                <div class="bg-blue-600 h-5 rounded-full text-right pr-2 text-sm" style="width: ${barWidth > 8 ? barWidth : 8}%">
+                                    ${count}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    statsDistribution.insertAdjacentHTML('beforeend', bar);
+                }
+                // Add fail bar
+                const failWidth = (failCount / maxDistribution) * 100;
+                const failBar = `
+                    <div class="flex items-center space-x-2">
+                        <div class="w-4 font-medium">X</div>
+                        <div class="w-full bg-gray-700 rounded-full h-5">
+                            <div class="bg-red-600 h-5 rounded-full text-right pr-2 text-sm" style="width: ${failWidth > 8 ? failWidth : 8}%">
+                                ${failCount}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                statsDistribution.insertAdjacentHTML('beforeend', failBar);
+
+                modalOverlay.style.display = 'flex';
+                analyticsModal.style.display = 'block';
+            }
+            
+            /**
+             * Generic function to close all modals
+             */
+            function closeModal() {
+                modalOverlay.style.display = 'none';
+                instructionsModal.style.display = 'none';
+                settingsModal.style.display = 'none';
+                analyticsModal.style.display = 'none';
+                endGameModal.style.display = 'none';
+            }
+
+            // --- Event Listeners ---
+            submitButton.addEventListener('click', handleSubmitGuess);
+            hintButton.addEventListener('click', handleHintClick);
+            newGameButton.addEventListener('click', initGame); // Added listener for new button
+            modalNewGameButton.addEventListener('click', () => {
+                closeModal();
+                initGame();
+            });
+            modalShareButton.addEventListener('click', handleShare);
+            
+            // Header button listeners
+            instructionsButton.addEventListener('click', () => {
+                modalOverlay.style.display = 'flex';
+                instructionsModal.style.display = 'block';
+            });
+            analyticsButton.addEventListener('click', showAnalyticsModal);
+            settingsButton.addEventListener('click', () => {
+                modalOverlay.style.display = 'flex';
+                settingsModal.style.display = 'block';
+            });
+            
+            // Modal close buttons
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+            document.querySelectorAll('.modal-close').forEach(btn => {
+                btn.addEventListener('click', closeModal);
+            });
+            
+            // Settings listeners
+            codeLengthSelect.addEventListener('change', saveSettings);
+            colorCountSelect.addEventListener('change', saveSettings);
+            hardModeToggle.addEventListener('change', saveSettings);
+
+            // --- Start Game ---
+            loadStats();
+            initGame();
+        });
+    </script>
+</body>
+</html>
