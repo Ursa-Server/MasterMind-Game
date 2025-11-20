@@ -119,7 +119,7 @@
             <h1 class="text-3xl font-bold text-center text-gray-100">Mastermind</h1>
             <div class="flex space-x-2">
                 <button id="analytics-btn" class="text-gray-400 hover:text-white p-2 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
                 </button>
                 <button id="settings-btn" class="text-gray-400 hover:text-white p-2 rounded-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -170,9 +170,9 @@
     <!-- Generic Modal Wrapper -->
     <div id="modal-overlay" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50" style="display: none;">
         <!-- End Game Modal -->
-        <div id="end-game-modal" class="bg-gray-800 p-6 rounded-lg shadow-xl text-center max-w-xs w-full" style="display: none;">
+        <div id="end-game-modal" class="bg-gray-800 p-6 rounded-lg shadow-xl text-center max-w-md w-full" style="display: none;">
             <h2 id="modal-title" class="text-2xl font-bold mb-4">You Won!</h2>
-            <p id="modal-message" class="mb-4">Congratulations, you cracked the code!</p>
+            <p id="modal-message" class="mb-4 text-lg">Congratulations, you cracked the code!</p>
             <div class="grid grid-cols-2 gap-2">
                 <button id="modal-share" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
                     Share
@@ -283,6 +283,210 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Victory Messages ---
+            const victoryMessages = [
+                "🤯 You cracked the code! Quick, before the government finds out!",
+                "🎉 The secret ingredient was always chaos. And you mastered it!",
+                "👑 Bow down, peons! The Mastermind has arrived!",
+                "🧠 My brain hurts just watching you. Well done!",
+                "🦄 You found the hidden unicorn in the haystack of logic!",
+                "✨ Did you just use magic? I suspect sorcery.",
+                "🧦 Winning is easy when you wear your lucky socks. (You were wearing lucky socks, right?)",
+                "🐢 Slow and steady wins the race... but you just zoomed past the finish line!",
+                "🎶 I hear an 8-bit fanfare playing just for you!",
+                "Error: Logic overflow. You won too hard.",
+                "🌮 Time for a celebratory taco. You earned it.",
+                "You're a genius! (Don't tell anyone I said that.)",
+                "Achievement Unlocked: Code Breaker Supreme!",
+                "I'm calling the police. That level of brilliance is illegal.",
+                "You're not just a mastermind, you're a... *masterpiece*.",
+                "Did you cheat? (Just kidding! ...Mostly.)",
+                "The algorithm weeps with joy/defeat.",
+                "Guess who's the cleverest? You are! (Yes, you.)",
+                "You've earned the right to gloat. Briefly.",
+                "This win brought to you by coffee and pure determination.",
+                "Victory smells like success... and a little bit like burnt toast.",
+                "The stars aligned, and so did your pegs.",
+                "A perfect deduction! Watson would be proud.",
+                "You successfully resisted the urge to flip the board. Bravo.",
+                "Your brain is full of glorious, colorful victory!",
+                "The code has been apprehended and charged with being too easy for you.",
+                "Now go forth and conquer a sandwich.",
+                "Consider this pop-up your official certificate of awesomeness.",
+                "I'm starting to think you peeked. Stop being so good!",
+                "Woohoo! Time to do your victory dance.",
+                "🕵️ Case closed! You've successfully investigated the secrets of the universe (or at least this game).",
+                "🎤 Drop the mic! You just solved the unsolvable.",
+                "🥇 You win! The trophy is currently being polished. Enjoy this digital hug instead.",
+                "💡 Your brain just emitted a winning frequency.",
+                "🤹 You juggle logic like a pro!",
+                "🍪 Well played! Have a digital cookie.",
+                "🤯 I need to lie down. That was too intense. Good job!",
+                "This is what happens when you combine luck with excessive intelligence.",
+                "Whoa, that was a photo finish! (Just kidding, you totally dominated.)",
+                "My processor is impressed. That's a high compliment.",
+                "You have officially achieved 'Peak Problem Solver' status.",
+                "We'll need to upgrade the difficulty settings just for you.",
+                "The Mastermind doesn't just play the game—it **is** the game.",
+                "Look at you, making excellent decisions and achieving great things!",
+                "You're like a heat-seeking missile of logic.",
+                "Don't stop now! There are still puzzles to solve (and snacks to eat).",
+                "And the crowd goes wild! (The crowd is me, the computer.)",
+                "Your intuition game is strong. Too strong, perhaps.",
+                "Tell me your secrets! Wait, don't. That's classified.",
+                "Your next challenge: finding where you put your keys.",
+                "Congratulations! You remembered all the colors correctly!",
+                "The hidden message was 'You Win!' and you decoded it perfectly.",
+                "You, my friend, are a riddle wrapped in an enigma, solved by pure deduction.",
+                "You didn't just play the game; you schooled it.",
+                "If winning were a job, you'd be Employee of the Month.",
+                "You are now officially a Certified Code Cracker (CCC).",
+                "Victory! The perfect blend of focus and a little bit of hopeful guessing.",
+                "You did it! *Confetti cannons deploy.*",
+                "Consider your mind officially blown. By your own brilliance.",
+                "That was spectacular. Take a bow!",
+                "🌟 You did it! A testament to **persistence** and keen observation.",
+                "🚀 Proof that you can figure out anything you put your mind to.",
+                "💪 Mistakes are just data points. You took that data and created **victory**.",
+                "🌱 **Growth** happens when you challenge yourself. You crushed it!",
+                "💖 Believe in your brilliance. Today, you made it shine.",
+                "🏔️ You reached the summit of this challenge. Keep climbing!",
+                "Your **focus** and attention to detail paid off beautifully.",
+                "Every step forward, no matter how small, is progress. Today was a **giant leap**.",
+                "This is what happens when you apply disciplined thought. **Well done**.",
+                "You didn't give up. That's the real win.",
+                "**Confidence** is quiet. Victory is loud. Hear that sound?",
+                "Success is the sum of small efforts, repeated. **Congratulations**.",
+                "The ability to learn is the greatest gift. You just unwrapped a win.",
+                "Let this win be a reminder: **you are capable of great things**.",
+                "You proved that logic triumphs over chaos.",
+                "**Celebrate** this achievement. You worked hard for it.",
+                "The courage to try is the key to all success.",
+                "Turn your effort into excellence. **You are excellent!**",
+                "You were patient, you were smart, and you **earned this**.",
+                "Let your victory inspire your next great move.",
+                "Winning isn't everything, but **learning how to win is**.",
+                "Trust your process. It led you here.",
+                "Your mind is a powerful tool. Use it often.",
+                "This is what **determination** looks like.",
+                "Victory isn't given; it's earned through **smart effort**.",
+                "You solved the problem. Now go apply that mindset everywhere.",
+                "You are the author of your own success story.",
+                "Keep learning, keep challenging yourself, **keep winning**.",
+                "What a beautiful display of intelligent guessing and masterful deduction.",
+                "Success is knowing when to stop guessing and start **knowing**.",
+                "The road was tricky, but your commitment was stronger.",
+                "**Never underestimate** what you can achieve when you put your mind to it.",
+                "You looked at the information and saw the **solution**.",
+                "You took risks, and they paid off. **Bravo!**",
+                "This victory is a milestone. What's the next one?",
+                "You are smarter than you think. This game proves it.",
+                "One challenge down. Ready for the world?",
+                "**Inspiration** is found in the victories you create for yourself.",
+                "You didn't just guess; you **reasoned** your way to the top.",
+                "The moment you believed you could, you were already halfway there. **You won!**",
+                "When life gives you lemonade, make lemons. Life will be all like, 'Whaaaaaat?!'",
+                "Always look people in the eyes. Even if they're blind. Just say, 'I am looking you in the eyes.'",
+                "If you get pulled over for speeding, tell the policeman your spouse has diarrhea.",
+                "You only get one chance at a first impression. I suggest Julia Child, because it's easiest to do. ('Save the giblets!')",
+                "The most amazing things that can happen to a human being will happen to you, if you just lower your expectations.",
+                "Dance until your feet hurt. Sing until your lungs hurt. Act until you're William Hurt.",
+                "Take a lesson from parakeets. If you're ever feeling lonely, just eat in front of a mirror.",
+                "Marry someone who looks sexy disappointed.",
+                "You can tell a lot about a person from their biography.",
+                "Watch a sunrise at least once a day.",
+                "If you love something, set it free. Unless it's a tiger.",
+                "If you're ever in a jam, a crayon scrunched up under your nose makes a good pretend mustache.",
+                "Older black ladies make the best iced tea.",
+                "Never be afraid to reach for the stars because even if you fall, you'll always be wearing a Parentchute.",
+                "If my son thinks of me as one of his idiot friends, I've succeeded as a dad.",
+                "A happy kid is like an antidepressant. But a natural one, not the kind your husband has to find in your jewelry drawer.",
+                "Think inside the box. That's right, I said inside. Because while everyone is chasing each other outside, you know what the box is? Empty.",
+                "Give a kid a bird, and he becomes one of those weird dudes who walk around with a bird on their shoulder. But give him a pair of wings, he can fly—unless he has absolutely no hand-eye coordination.",
+                "Sometimes God closes a door, but sometimes he closes it so hard, you can't get your wife out.",
+                "Success is 1% inspiration, 98% perspiration, and 2% attention to detail.",
+                "If you're ever feeling down, just think of the three C's: Coffee, Cereal, and Comedy.",
+                "If you want to be truly happy in life, surround yourself with people who make you laugh. And also, people who bring snacks.",
+                "Always keep the rhythm in your feet and a little party in your shoulders.",
+                "Act like a parent, talk like a peer. I call it peerrenting.",
+                "Buy low, sell high. People are gonna see this and say, 'That guy's high.'",
+                "Hip hip hip hurray, save the extra hip 'cause you're gonna need it someday!",
+                "If you wanna fly, I'm not gonna hold your feet to the ground. I want to be the one to push you off the cliff.",
+                "The world needs more dreamers. Never stop licking things.",
+                "Slow is smooth, and smooth is fast.",
+                "When it rains on your parade, dance. You’re wet anyway.",
+                "A sandwich tastes better when someone else makes it, but a victory tastes best when you make it yourself.",
+                "Always carry two pens: one to lend, one to pretend doesn’t work.",
+                "A day without laughter is like a day without Wi-Fi.",
+                "Don’t fear the unknown—unless the unknown looks like a snake.",
+                "The secret to success? A lot of trying and a little lying. Just kidding. Don’t lie... unless you're playing poker.",
+                "Sleep like no one’s watching. Snore like you just don’t care.",
+                "If you’re lost in thought, at least you’re somewhere interesting.",
+                "Be the person who claps first, laughs hardest, and eats the last cookie.",
+                "There's no 'I' in team, but there’s a 'ME' if you rearrange it.",
+                "If your friend’s joke fails, laugh louder. It’s charity.",
+                "A family hug should be like a burrito: warm, tight, and comforting.",
+                "If life gives you a tough situation, add glitter. Everything’s better with glitter—except vacuuming.",
+                "Want a stress-free life? Do yoga. Want a fun life? Do karaoke.",
+                "Marriage is like a tandem bike. One of you pedals, the other rings the bell.",
+                "You’re never too old to learn something new. That’s why I watch YouTube.",
+                "If at first you don’t succeed, redefine success.",
+                "Clothes are like friends: they’re better when they don’t wrinkle.",
+                "Sometimes you just have to look at a big problem and say, “Not today, Satan. Not today.”",
+                "A selfie is worth a thousand likes.",
+                "Eat ice cream like it’s melting. Because it is.",
+                "Time flies when you're having fun—unless you're holding a plank.",
+                "Never pass up free food. It’s food, and it’s free.",
+                "Dogs are man’s best friend because they never judge your dance moves.",
+                "Hugs are like band-aids for your soul.",
+                "Worrying is like carrying an umbrella every day. Sure, you’re prepared, but you look kinda ridiculous.",
+                "Teach your kids to be kind. Also, teach them to mow the lawn.",
+                "Always RSVP “yes” to cake.",
+                "If you’re trying to impress someone, just smile. Teeth are like free accessories.",
+                "Life isn’t a race. Unless you’re running. Then, yeah, it is.",
+                "Turn failures into lessons and lessons into pizza nights.",
+                "Never challenge your kid to a staring contest. They have nothing to lose.",
+                "Take naps. Like a genius.",
+                "When someone says, “You can’t do that,” say, “Hold my juice box.”",
+                "Wear sunglasses inside. If you look cool enough, people won’t question it.",
+                "Buy extra Halloween candy. You’re gonna need it.",
+                "Always root for the underdog—unless you’re betting money.",
+                "A spilled drink is an opportunity to mop the floor. You’re welcome.",
+                "It’s okay to cry. Just pick your location wisely. (Not Costco.)",
+                "A little dirt never hurt anyone. But a lot of dirt? That’s a problem.",
+                "Dinner tastes better when you eat it together. Even broccoli.",
+                "Pick your battles wisely, especially with teenagers. You’ll lose anyway.",
+                "“Because I said so” is a perfectly reasonable answer.",
+                "A dad joke a day keeps the cool kids away.",
+                "If you can’t win, be entertaining.",
+                "A family is like lasagna. Layers of love, warmth, and occasional cheese.",
+                "Wear a tie when it’s not required. People will think you’re important.",
+                "The more you laugh at life, the less life can laugh at you.",
+                "Mistakes are like bruises. They hurt now, but you’ll have a good story later.",
+                "Sandwich crusts are optional. Love is not.",
+                "If you can’t be the smartest in the room, be the friendliest.",
+                "Success tastes like bacon. So start cooking.",
+                "Always leave room for dessert. Or regret. Your choice.",
+                "Be confident, even if you’re not. Fake it like bad spray tan.",
+                "A good handshake can change someone’s opinion. Just don’t make it clammy.",
+                "Always cheer for your kids—no matter how weird the play is.",
+                "Socks are the unsung heroes of life. Respect them.",
+                "Shoes make the man. Slippers make him happier.",
+                "Life’s short. Buy the LEGO set.",
+                "The best views in life come from the top of a Ferris wheel and the bottom of a bucket of popcorn.",
+                "Don’t sweat the small stuff. Or the medium stuff. Sweat only when jogging.",
+                "When you lose your keys, blame the couch.",
+                "Always wave at neighbors. It confuses them into liking you.",
+                "A great party needs snacks, music, and zero lampshades on heads.",
+                "Start every day with a win—like finding matching socks.",
+                "Some days you’re the windshield. Some days you’re the bug.",
+                "Never leave a high five hanging.",
+                "If you’re gonna fail, fail hilariously.",
+                "Confidence is 50% posture and 50% pretending you know where you’re going.",
+                "You can do anything with a little determination and a lot of snacks.",
+                "At the end of the day, family is everything. Even when they eat the last slice of pizza."
+            ];
+
             // --- Game Configuration ---
             const ALL_COLORS = ['#EF4444', '#22C55E', '#3B82F6', '#EAB308', '#A855F7', '#EC4899', '#F97316', '#14B8A6']; // Red, Green, Blue, Yellow, Purple, Pink, Orange, Teal
             let CODE_LENGTH = 4;
@@ -295,7 +499,7 @@
             const colorPalette = document.getElementById('color-palette');
             const submitButton = document.getElementById('submit-guess');
             const hintButton = document.getElementById('hint-btn');
-            const newGameButton = document.getElementById('new-game-btn'); // New game button in main controls
+            const newGameButton = document.getElementById('new-game-btn');
             const secretCodeContainer = document.getElementById('secret-code');
             const currentStreakDisplay = document.getElementById('current-streak');
             const toast = document.getElementById('toast');
@@ -336,15 +540,12 @@
             let currentRow = 0;
             let gameOver = false;
             let currentColors = [];
-            let guessHistory = []; // For hard mode and sharing
+            let guessHistory = [];
             let hintUsed = false;
             let stats = {};
 
             // --- Functions ---
             
-            /**
-             * Vibrate wrapper for haptics
-             */
             function vibrate(duration) {
                 if (navigator.vibrate) {
                     try {
@@ -355,9 +556,6 @@
                 }
             }
             
-            /**
-             * Show a toast notification
-             */
             function showToast(message) {
                 toast.textContent = message;
                 toast.classList.add('show');
@@ -366,36 +564,25 @@
                 }, 3000);
             }
 
-            /**
-             * Load settings from localStorage or set defaults
-             */
             function loadSettings() {
                 CODE_LENGTH = parseInt(localStorage.getItem('mastermindCodeLength') || '4', 10);
                 NUM_COLORS = parseInt(localStorage.getItem('mastermindColorCount') || '6', 10);
                 IS_HARD_MODE = (localStorage.getItem('mastermindHardMode') === 'true');
 
-                // Update settings modal inputs to reflect loaded settings
                 codeLengthSelect.value = CODE_LENGTH;
                 colorCountSelect.value = NUM_COLORS;
                 hardModeToggle.checked = IS_HARD_MODE;
             }
 
-            /**
-             * Save settings to localStorage
-             */
             function saveSettings() {
                 localStorage.setItem('mastermindCodeLength', codeLengthSelect.value);
                 localStorage.setItem('mastermindColorCount', colorCountSelect.value);
                 localStorage.setItem('mastermindHardMode', hardModeToggle.checked);
                 
-                // Show a message that settings will apply on next game
                 showToast("Settings saved! They will apply on your next game.");
                 closeModal();
             }
 
-            /**
-             * Load stats from localStorage
-             */
             function loadStats() {
                 stats = JSON.parse(localStorage.getItem('mastermindStats')) || {
                     gamesPlayed: 0,
@@ -408,16 +595,10 @@
                 updateStreakDisplay();
             }
             
-            /**
-             * Save stats to localStorage
-             */
             function saveStats() {
                 localStorage.setItem('mastermindStats', JSON.stringify(stats));
             }
 
-            /**
-             * Update stats after a game ends
-             */
             function updateStats(win) {
                 stats.gamesPlayed++;
                 if (win) {
@@ -435,21 +616,13 @@
                 updateStreakDisplay();
             }
             
-            /**
-             * Update the streak display on the main page
-             */
             function updateStreakDisplay() {
                 currentStreakDisplay.textContent = stats.streak || 0;
             }
 
-            /**
-             * Initializes or resets the game
-             */
             function initGame() {
-                // Load settings first
                 loadSettings();
                 
-                // Reset game state
                 currentColors = ALL_COLORS.slice(0, NUM_COLORS);
                 secretCode = generateSecretCode();
                 currentGuess = [];
@@ -458,7 +631,6 @@
                 guessHistory = [];
                 hintUsed = false;
 
-                // Reset UI
                 gameBoard.innerHTML = '';
                 colorPalette.innerHTML = '';
                 secretCodeContainer.innerHTML = '';
@@ -474,14 +646,8 @@
                 drawPalette();
                 updateActiveRow();
                 updateStreakDisplay();
-                
-                // For debugging: console.log('Secret Code:', secretCode.map(c => ALL_COLORS.indexOf(c)));
             }
 
-            /**
-             * Generates a random secret code
-             * @returns {string[]} Array of color strings
-             */
             function generateSecretCode() {
                 const code = [];
                 for (let i = 0; i < CODE_LENGTH; i++) {
@@ -491,11 +657,7 @@
                 return code;
             }
 
-            /**
-             * Creates the color palette buttons in the DOM
-             */
             function drawPalette() {
-                // Adjust palette grid based on color count
                 colorPalette.className = `flex flex-row flex-wrap justify-center gap-2 mb-4 p-3 bg-gray-800 rounded-lg`;
                 
                 currentColors.forEach(color => {
@@ -508,35 +670,27 @@
                 });
             }
 
-            /**
-             * Creates the guess rows in the DOM
-             */
             function drawBoard() {
                 for (let i = 0; i < MAX_GUESSES; i++) {
                     const row = document.createElement('div');
                     row.className = 'guess-row flex items-center justify-between p-2 rounded-lg border-2 border-transparent';
                     row.id = `row-${i}`;
 
-                    // Guess Pegs
                     const guessPegsContainer = document.createElement('div');
                     guessPegsContainer.className = 'flex space-x-2';
                     for (let j = 0; j < CODE_LENGTH; j++) {
                         const peg = document.createElement('div');
-                        peg.className = 'guess-peg w-10 h-10 md:w-12 md:h-12'; // Responsive peg size
-                        // Adjust size based on code length
+                        peg.className = 'guess-peg w-10 h-10 md:w-12 md:h-12'; 
                         if (CODE_LENGTH === 5) peg.className = 'guess-peg w-8 h-8 md:w-10 md:h-10';
                         if (CODE_LENGTH === 6) peg.className = 'guess-peg w-7 h-7 md:w-8 md:h-8';
                         
                         peg.id = `peg-${i}-${j}`;
-                        // Add click event to remove a color from the guess
                         peg.addEventListener('click', () => handlePegClick(j));
                         guessPegsContainer.appendChild(peg);
                     }
 
-                    // Feedback Pegs
                     const feedbackPegsContainer = document.createElement('div');
                     feedbackPegsContainer.className = 'feedback-peg-grid';
-                    // Adjust feedback grid for code length
                     if (CODE_LENGTH === 5) {
                         feedbackPegsContainer.style.gridTemplateColumns = 'repeat(3, 1fr)';
                         feedbackPegsContainer.style.width = '33px';
@@ -559,16 +713,11 @@
                     row.appendChild(feedbackPegsContainer);
                     gameBoard.appendChild(row);
                 }
-                // Reverse rows to show from bottom-up, more classic board game feel
                 const rows = Array.from(gameBoard.children);
                 gameBoard.innerHTML = '';
                 gameBoard.append(...rows.reverse());
             }
 
-            /**
-             * Handles clicking a color from the palette
-             * @param {string} color - The color that was clicked
-             */
             function handleColorClick(color) {
                 if (gameOver || currentGuess.length >= CODE_LENGTH) {
                     return;
@@ -578,49 +727,36 @@
                 updateCurrentGuessPegs();
             }
 
-            /**
-             * Handles clicking a peg in the current guess row to remove it
-             * @param {number} index - The index of the peg clicked
-             */
             function handlePegClick(index) {
                 if (gameOver || index >= currentGuess.length) {
-                    return; // Can't remove a color that hasn't been set
+                    return;
                 }
 
-                // Remove the color at the clicked index
                 currentGuess.splice(index, 1);
                 updateCurrentGuessPegs();
             }
 
-            /**
-             * Updates the DOM to reflect the currentGuess array
-             */
             function updateCurrentGuessPegs() {
                 for (let i = 0; i < CODE_LENGTH; i++) {
                     const peg = document.getElementById(`peg-${currentRow}-${i}`);
-                    if (!peg) continue; // Safety check
+                    if (!peg) continue; 
                     if (currentGuess[i]) {
                         peg.style.backgroundColor = currentGuess[i];
                         peg.style.borderStyle = 'solid';
-                        peg.style.borderColor = '#9CA3AF'; // Add a light border to filled pegs
+                        peg.style.borderColor = '#9CA3AF'; 
                     } else {
-                        peg.style.backgroundColor = '#374151'; // Empty slot color
+                        peg.style.backgroundColor = '#374151'; 
                         peg.style.borderStyle = 'dashed';
                         peg.style.borderColor = '#4B5563';
                     }
                 }
             }
             
-            /**
-             * Highlights the current active guess row
-             */
             function updateActiveRow() {
-                // Remove active class from all rows
                 document.querySelectorAll('.guess-row').forEach(row => {
                     row.classList.remove('active-row');
                 });
                 
-                // Add active class to the current row
                 if (!gameOver) {
                     const activeRow = document.getElementById(`row-${currentRow}`);
                     if (activeRow) {
@@ -629,11 +765,6 @@
                 }
             }
             
-            /**
-             * Validates the guess against previous feedback in Hard Mode
-             * @param {string[]} guess - The user's current guess
-             * @returns {boolean} - True if the guess is valid, false otherwise
-             */
             function validateHardMode(guess) {
                 if (!IS_HARD_MODE) return true;
                 
@@ -642,7 +773,6 @@
                     if (simulatedFeedback.blackPegs !== history.feedback.blackPegs || 
                         simulatedFeedback.whitePegs !== history.feedback.whitePegs) {
                         
-                        // This guess contradicts feedback from row ${guessHistory.indexOf(history) + 1}
                         showToast(`Guess contradicts feedback from row ${guessHistory.indexOf(history) + 1}.`);
                         return false;
                     }
@@ -650,22 +780,16 @@
                 return true;
             }
 
-            /**
-             * Handles the "Submit Guess" button click
-             */
             function handleSubmitGuess() {
                 if (gameOver || currentGuess.length !== CODE_LENGTH) {
                     showToast("Your guess is not complete.");
                     return;
                 }
                 
-                // Hard Mode Check
                 if (IS_HARD_MODE) {
-                    // Check against the secret code itself. If this guess was the code,
-                    // would it produce the same feedback for all previous guesses?
                     const isGuessValid = guessHistory.every(past => {
                         const pastFeedback = past.feedback;
-                        const currentFeedback = getFeedback(past.guess, currentGuess); // what feedback *would* this guess give?
+                        const currentFeedback = getFeedback(past.guess, currentGuess); 
                         return currentFeedback.blackPegs === pastFeedback.blackPegs &&
                                currentFeedback.whitePegs === pastFeedback.whitePegs;
                     });
@@ -677,18 +801,15 @@
                     }
                 }
                 
-                vibrate(50); // Haptic feedback on submit
+                vibrate(50); 
 
-                // Get feedback
                 const feedback = getFeedback(currentGuess, secretCode);
                 guessHistory.push({ guess: [...currentGuess], feedback: feedback });
 
-                // Display feedback
                 displayFeedback(feedback.blackPegs, feedback.whitePegs);
 
-                // Check for win
                 if (feedback.blackPegs === CODE_LENGTH) {
-                    vibrate(500); // Win haptic
+                    vibrate(500); 
                     gameOver = true;
                     updateStats(true);
                     showEndGameModal(true);
@@ -696,13 +817,11 @@
                     return;
                 }
 
-                // Not a win, move to next row
                 currentRow++;
                 currentGuess = [];
 
-                // Check for loss
                 if (currentRow === MAX_GUESSES) {
-                    vibrate([200, 100, 200]); // Lose haptic
+                    vibrate([200, 100, 200]); 
                     gameOver = true;
                     updateStats(false);
                     showEndGameModal(false);
@@ -713,9 +832,6 @@
                 updateActiveRow();
             }
             
-            /**
-             * Handles the "Hint" button click
-             */
             function handleHintClick() {
                 if (gameOver || hintUsed || currentRow >= MAX_GUESSES - 1) {
                     let msg = "Can't use hint.";
@@ -731,8 +847,6 @@
                 hintButton.classList.add('opacity-50', 'cursor-not-allowed');
                 vibrate(100);
 
-                // Find a correct peg to reveal
-                // Try to find one that isn't already correct in the current guess
                 let hintIndex = -1;
                 if (currentGuess.length === CODE_LENGTH) {
                     for(let i=0; i < CODE_LENGTH; i++) {
@@ -743,35 +857,30 @@
                     }
                 }
                 
-                // If all are correct (somehow) or guess is empty, just find a random one
                 if (hintIndex === -1) {
                     hintIndex = Math.floor(Math.random() * CODE_LENGTH);
                 }
 
-                // Create a "hint" guess
                 const hintGuess = new Array(CODE_LENGTH).fill(null);
                 hintGuess[hintIndex] = secretCode[hintIndex];
                 
-                // Display this as a guess
                 for (let i = 0; i < CODE_LENGTH; i++) {
                     const peg = document.getElementById(`peg-${currentRow}-${i}`);
                     if (!peg) continue;
                     if (i === hintIndex) {
                         peg.style.backgroundColor = secretCode[i];
-                        peg.style.border = '2px solid #EAB308'; // Yellow/Gold border for hint
+                        peg.style.border = '2px solid #EAB308'; 
                     } else {
-                        peg.style.backgroundColor = '#4B5563'; // Dark gray
+                        peg.style.backgroundColor = '#4B5563'; 
                         peg.style.borderStyle = 'none';
                         peg.style.opacity = '0.5';
                     }
                 }
                 
-                // Get feedback for this "hint"
                 const feedback = getFeedback(hintGuess, secretCode);
                 guessHistory.push({ guess: hintGuess, feedback: feedback });
                 displayFeedback(feedback.blackPegs, feedback.whitePegs);
                 
-                // Move to next row
                 currentRow++;
                 currentGuess = [];
 
@@ -788,12 +897,6 @@
                 showToast("Hint used! One correct peg revealed.");
             }
 
-            /**
-             * Compares the guess to the secret code and returns feedback
-             * @param {string[]} guess - The user's guess array
-             * @param {string[]} code - The code to compare against (usually secretCode)
-             * @returns {{blackPegs: number, whitePegs: number}}
-             */
             function getFeedback(guess, code) {
                 let blackPegs = 0;
                 let whitePegs = 0;
@@ -801,23 +904,19 @@
                 const codeCopy = [...code];
                 const guessCopy = [...guess];
 
-                // First pass: Check for black pegs (correct color, correct position)
                 for (let i = guessCopy.length - 1; i >= 0; i--) {
                     if (guessCopy[i] && guessCopy[i] === codeCopy[i]) {
                         blackPegs++;
-                        // Nullify to prevent re-counting
                         codeCopy[i] = null;
                         guessCopy[i] = null;
                     }
                 }
 
-                // Second pass: Check for white pegs (correct color, wrong position)
                 for (let i = 0; i < guessCopy.length; i++) {
                     if (guessCopy[i] !== null) {
                         const matchingIndexInCode = codeCopy.indexOf(guessCopy[i]);
                         if (matchingIndexInCode !== -1) {
                             whitePegs++;
-                            // Nullify to prevent re-counting
                             codeCopy[matchingIndexInCode] = null;
                         }
                     }
@@ -826,36 +925,24 @@
                 return { blackPegs, whitePegs };
             }
 
-            /**
-             * Updates the feedback pegs in the DOM for the current row
-             * @param {number} blackPegs
-             * @param {number} whitePegs
-             */
             function displayFeedback(blackPegs, whitePegs) {
                 let feedbackIndex = 0;
                 
-                // Display black pegs
                 for (let i = 0; i < blackPegs; i++) {
                     const peg = document.getElementById(`feedback-${currentRow}-${feedbackIndex}`);
-                    if (peg) peg.style.backgroundColor = '#FFFFFF'; // White for "black" peg (classic)
+                    if (peg) peg.style.backgroundColor = '#FFFFFF'; 
                     feedbackIndex++;
                 }
 
-                // Display white pegs
                 for (let i = 0; i < whitePegs; i++) {
                     const peg = document.getElementById(`feedback-${currentRow}-${feedbackIndex}`);
-                    if (peg) peg.style.backgroundColor = '#DC2626'; // Red for "white" peg
+                    if (peg) peg.style.backgroundColor = '#DC2626'; 
                     feedbackIndex++;
                 }
-                
-                // The rest will remain the default dark gray
             }
 
-            /**
-             * Reveals the secret code at the end of the game
-             */
             function revealSecretCode() {
-                secretCodeContainer.innerHTML = ''; // Clear previous
+                secretCodeContainer.innerHTML = ''; 
                 secretCode.forEach(color => {
                     const peg = document.createElement('div');
                     let pegSize = 'w-8 h-8 md:w-10 md:h-10';
@@ -868,26 +955,25 @@
                 secretCodeContainer.style.display = 'flex';
             }
 
-            /**
-             * Shows the win/lose modal
-             * @param {boolean} isWin - True if the player won, false if they lost
-             */
             function showEndGameModal(isWin) {
                 if (isWin) {
                     modalTitle.textContent = 'You Won!';
-                    modalMessage.textContent = `Congratulations, you cracked the code in ${currentRow + 1} guesses!`;
+                    
+                    // PICK A RANDOM MESSAGE
+                    const randomMsg = victoryMessages[Math.floor(Math.random() * victoryMessages.length)];
+                    
+                    // Update the message HTML to include the random quote without surrounding quotation marks
+                    modalMessage.innerHTML = `Congratulations, you cracked the code in ${currentRow + 1} guesses!<br><br><p class="text-yellow-400 italic text-sm">${randomMsg}</p>`;
                 } else {
                     modalTitle.textContent = 'Game Over';
                     modalMessage.textContent = 'You ran out of guesses! The code has been revealed.';
                 }
                 
-                // Disable submit button
                 submitButton.disabled = true;
                 submitButton.classList.add('opacity-50', 'cursor-not-allowed');
                 hintButton.disabled = true;
                 hintButton.classList.add('opacity-50', 'cursor-not-allowed');
 
-                // Remove active row highlight
                 document.querySelectorAll('.guess-row').forEach(row => {
                     row.classList.remove('active-row');
                 });
@@ -896,28 +982,31 @@
                 endGameModal.style.display = 'block';
             }
             
-            /**
-             * Generates the shareable emoji grid and copies to clipboard
-             */
             function handleShare() {
                 vibrate(50);
                 let resultString = `Mastermind (${CODE_LENGTH} pegs, ${NUM_COLORS} colors)\n`;
-                resultString += `Turns: ${gameOver && modalTitle.textContent === 'You Won!' ? currentRow + 1 : 'X'}/${MAX_GUESSES}\n`;
+                
+                let turnsString = 'X';
+                if (modalTitle.textContent === 'You Won!') {
+                    turnsString = (currentRow + 1);
+                }
+                
+                resultString += `Turns: ${turnsString}/${MAX_GUESSES}\n`;
+
                 if (IS_HARD_MODE) resultString += "(Hard Mode)\n";
                 resultString += "\n";
 
                 guessHistory.forEach(item => {
                     let rowString = "";
-                    rowString += "⚪".repeat(item.feedback.blackPegs); // White square for "black" peg
-                    rowString += "🔴".repeat(item.feedback.whitePegs); // Red circle for "white" peg
-                    rowString += "⚫".repeat(CODE_LENGTH - item.feedback.blackPegs - item.feedback.whitePegs); // Black circle for empty
+                    rowString += "⚪".repeat(item.feedback.blackPegs);
+                    rowString += "🔴".repeat(item.feedback.whitePegs);
+                    rowString += "⚫".repeat(CODE_LENGTH - item.feedback.blackPegs - item.feedback.whitePegs);
                     resultString += rowString + "\n";
                 });
                 
-                // Use document.execCommand('copy') for better iframe compatibility
                 const textArea = document.createElement('textarea');
                 textArea.value = resultString;
-                textArea.style.position = 'fixed';  // Prevent scrolling to bottom
+                textArea.style.position = 'fixed'; 
                 textArea.style.top = '-999px';
                 document.body.appendChild(textArea);
                 textArea.focus();
@@ -931,9 +1020,6 @@
                 document.body.removeChild(textArea);
             }
             
-            /**
-             * Shows the analytics modal
-             */
             function showAnalyticsModal() {
                 statsPlayed.textContent = stats.gamesPlayed || 0;
                 const winPct = (stats.gamesPlayed > 0) ? Math.round((stats.gamesWon / stats.gamesPlayed) * 100) : 0;
@@ -941,7 +1027,6 @@
                 statsStreak.textContent = stats.streak || 0;
                 statsMaxStreak.textContent = stats.maxStreak || 0;
 
-                // Generate distribution bars
                 statsDistribution.innerHTML = '';
                 let maxDistribution = 0;
                 for (let i = 1; i <= MAX_GUESSES; i++) {
@@ -950,7 +1035,7 @@
                 }
                 const failCount = stats.distribution['fail'] || 0;
                 if (failCount > maxDistribution) maxDistribution = failCount;
-                if (maxDistribution === 0) maxDistribution = 1; // Avoid divide by zero
+                if (maxDistribution === 0) maxDistribution = 1; 
 
                 for (let i = 1; i <= MAX_GUESSES; i++) {
                     const count = stats.distribution[i] || 0;
@@ -967,7 +1052,6 @@
                     `;
                     statsDistribution.insertAdjacentHTML('beforeend', bar);
                 }
-                // Add fail bar
                 const failWidth = (failCount / maxDistribution) * 100;
                 const failBar = `
                     <div class="flex items-center space-x-2">
@@ -985,9 +1069,6 @@
                 analyticsModal.style.display = 'block';
             }
             
-            /**
-             * Generic function to close all modals
-             */
             function closeModal() {
                 modalOverlay.style.display = 'none';
                 instructionsModal.style.display = 'none';
@@ -999,14 +1080,13 @@
             // --- Event Listeners ---
             submitButton.addEventListener('click', handleSubmitGuess);
             hintButton.addEventListener('click', handleHintClick);
-            newGameButton.addEventListener('click', initGame); // Added listener for new button
+            newGameButton.addEventListener('click', initGame);
             modalNewGameButton.addEventListener('click', () => {
                 closeModal();
                 initGame();
             });
             modalShareButton.addEventListener('click', handleShare);
             
-            // Header button listeners
             instructionsButton.addEventListener('click', () => {
                 modalOverlay.style.display = 'flex';
                 instructionsModal.style.display = 'block';
@@ -1017,7 +1097,6 @@
                 settingsModal.style.display = 'block';
             });
             
-            // Modal close buttons
             modalOverlay.addEventListener('click', (e) => {
                 if (e.target === modalOverlay) {
                     closeModal();
@@ -1027,7 +1106,6 @@
                 btn.addEventListener('click', closeModal);
             });
             
-            // Settings listeners
             codeLengthSelect.addEventListener('change', saveSettings);
             colorCountSelect.addEventListener('change', saveSettings);
             hardModeToggle.addEventListener('change', saveSettings);
